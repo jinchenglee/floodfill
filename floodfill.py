@@ -91,10 +91,10 @@ def fill(cur_distance=0, cur_pos=(0,0), tgt_pos=(1,1), obstacles=[], path_map=[]
 
 
 # Boundary of search
-M,N = 10,9 
-start_pos = (2,1)
-tgt_pos = (7,8)
-obstacles=[(2,3),(2,4),(3,4),(4,4),(5,4),(6,4),(7,4),(8,4)]
+M,N = 15, 12
+start_pos = (10,3)
+tgt_pos = (6,6)
+obstacles=[(1,2),(2,2),(2,3),(2,4),(3,4),(4,4),(5,4),(6,4),(7,4),(8,4),(8,5),(8,6),(8,7),(7,7),(6,7),(5,7),(5,6)]
 path_map = np.zeros((M,N)) + 255
 tmp_path = []
 distance = 255
@@ -108,6 +108,8 @@ print(golden_path)
 
 for pos in golden_path:
     path_map[pos] = 111
+for pos in obstacles:
+    path_map[pos] = 888
 
 
 print(path_map)
