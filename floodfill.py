@@ -1,7 +1,11 @@
 import numpy as np
 from copy import deepcopy
 
+# Boundary of search
+M,N = 5,5 
+
 golden_path = []
+heuristic_map = np.zeros((M+1,N+1))
 
 def fill(cur_distance=0, cur_pos=(0,0), tgt_pos=(1,1), obstacles=[], path_map=[], tmp_best_distance=255, tmp_path=[]): 
     """
@@ -25,6 +29,7 @@ def fill(cur_distance=0, cur_pos=(0,0), tgt_pos=(1,1), obstacles=[], path_map=[]
     """
 
     global golden_path
+    global heuristic_map
 
     # Get boundaries of search
     M,N = path_map.shape
@@ -39,7 +44,7 @@ def fill(cur_distance=0, cur_pos=(0,0), tgt_pos=(1,1), obstacles=[], path_map=[]
     # Distance update
     nxt_distance = cur_distance + 1
     # Debug print
-    #print("(x,y)=(",x,",", y,") cur_distance =", cur_distance, "best_distance =", tmp_best_distance)
+    print("(x,y)=(",x,",", y,") cur_distance =", cur_distance, "best_distance =", tmp_best_distance)
 
     # At the target already!
     if (cur_pos == tgt_pos):
@@ -49,55 +54,71 @@ def fill(cur_distance=0, cur_pos=(0,0), tgt_pos=(1,1), obstacles=[], path_map=[]
         #print(golden_path)
         return cur_distance,golden_path
 
+    # Searching order to be determined by heuristic map - smallest searching first
+    search_order_dict = { heuristic_map[x-1,y]:(x-1,y), \
+                    heuristic_map[x+1,y]:(x+1,y), \
+                    heuristic_map[x,y-1]:(x,y-1), \
+                    heuristic_map[x,y+1]:(x,y+1) }
+
     if tmp_best_distance > nxt_distance:
+        for heuristic_distance,coordinates in sorted(search_order_dict.items()):
+                if coordinates[0]>=0 and coordinates[0]<M and coordinates[1]>=0 and coordinates[1]<N :
+                        tmp_path.append((x,y))
+                        tmp_best_distance,golden_path = fill(nxt_distance,coordinates,tgt_pos,obstacles,path_map,tmp_best_distance,tmp_path)
+                        tmp_path.pop()
 
-        # West
-        if x-1 >= 0:
-            if path_map[x-1,y]>nxt_distance and ((x-1,y) not in obstacles):
-                tmp_path.append((x,y))
-                tmp_best_distance,golden_path = fill(nxt_distance, (x-1,y), tgt_pos, obstacles, path_map, tmp_best_distance, tmp_path)
-                tmp_path.pop()
-        #else:
-        #    print("Hit wall! West side")
-
-        # East 
-        if x+1 < M:
-            if path_map[x+1,y]>nxt_distance and ((x+1,y) not in obstacles):
-                tmp_path.append((x,y))
-                tmp_best_distance,golden_path = fill(nxt_distance, (x+1,y), tgt_pos, obstacles, path_map, tmp_best_distance, tmp_path)
-                tmp_path.pop()
-        #else:
-        #    print("Hit wall! East side")
-
-        # North
-        if y-1 >= 0:
-            if path_map[x,y-1]>nxt_distance and ((x,y-1) not in obstacles):
-                tmp_path.append((x,y))
-                tmp_best_distance,golden_path = fill(nxt_distance, (x,y-1), tgt_pos, obstacles, path_map, tmp_best_distance, tmp_path)
-                tmp_path.pop()
-        #else:
-        #    print("Hit wall! North side")
-
-        # South
-        if y+1 < N:
-            if path_map[x,y+1]>nxt_distance and ((x,y+1) not in obstacles):
-                tmp_path.append((x,y))
-                tmp_best_distance,golden_path = fill(nxt_distance, (x,y+1), tgt_pos, obstacles, path_map, tmp_best_distance, tmp_path)
-                tmp_path.pop()
-        #else:
-        #    print("Hit wall! South side")
+#        # West
+#        if x-1 >= 0:
+#            if path_map[x-1,y]>nxt_distance and ((x-1,y) not in obstacles):
+#                tmp_path.append((x,y))
+#                tmp_best_distance,golden_path = fill(nxt_distance, (x-1,y), tgt_pos, obstacles, path_map, tmp_best_distance, tmp_path)
+#                tmp_path.pop()
+#        #else:
+#        #    print("Hit wall! West side")
+#
+#        # East 
+#        if x+1 < M:
+#            if path_map[x+1,y]>nxt_distance and ((x+1,y) not in obstacles):
+#                tmp_path.append((x,y))
+#                tmp_best_distance,golden_path = fill(nxt_distance, (x+1,y), tgt_pos, obstacles, path_map, tmp_best_distance, tmp_path)
+#                tmp_path.pop()
+#        #else:
+#        #    print("Hit wall! East side")
+#
+#        # North
+#        if y-1 >= 0:
+#            if path_map[x,y-1]>nxt_distance and ((x,y-1) not in obstacles):
+#                tmp_path.append((x,y))
+#                tmp_best_distance,golden_path = fill(nxt_distance, (x,y-1), tgt_pos, obstacles, path_map, tmp_best_distance, tmp_path)
+#                tmp_path.pop()
+#        #else:
+#        #    print("Hit wall! North side")
+#
+#        # South
+#        if y+1 < N:
+#            if path_map[x,y+1]>nxt_distance and ((x,y+1) not in obstacles):
+#                tmp_path.append((x,y))
+#                tmp_best_distance,golden_path = fill(nxt_distance, (x,y+1), tgt_pos, obstacles, path_map, tmp_best_distance, tmp_path)
+#                tmp_path.pop()
+#        #else:
+#        #    print("Hit wall! South side")
 
     return tmp_best_distance,golden_path
 
 
-# Boundary of search
-M,N = 15, 12
-start_pos = (10,3)
-tgt_pos = (6,6)
-obstacles=[(1,2),(2,2),(2,3),(2,4),(3,4),(4,4),(5,4),(6,4),(7,4),(8,4),(8,5),(8,6),(8,7),(7,7),(6,7),(5,7),(5,6)]
+start_pos = (0,2)
+tgt_pos = (4,1)
+#obstacles=[(1,2),(2,2),(2,3),(2,4),(3,4),(4,4),(5,4),(6,4),(7,4),(8,4),(8,5),(8,6),(8,7),(7,7),(6,7),(5,7),(5,6)]
+obstacles=[(1,2),(2,2),(2,3),(2,4),(3,4)]
 path_map = np.zeros((M,N)) + 255
 tmp_path = []
 distance = 255
+
+# Theoretical shortest distance map to target point.
+for row in range(0,M):
+        for col in range(0,N):
+                heuristic_map[row,col] = abs(row-tgt_pos[0]) + abs(col-tgt_pos[1])
+print(heuristic_map)
 
 distance,golden_path = fill(0, start_pos, tgt_pos, obstacles, path_map, 255, tmp_path)
 
