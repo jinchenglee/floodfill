@@ -2,10 +2,10 @@ import numpy as np
 from copy import deepcopy
 
 # Boundary of search
-M,N = 5,5 
+M,N = 13,12
 
 golden_path = []
-heuristic_map = np.zeros((M+1,N+1))
+heuristic_map = np.zeros((M+1,N+1)) # Ugly hack to ease later coding by making diminion 1 unit bigger.
 
 def fill(cur_distance=0, cur_pos=(0,0), tgt_pos=(1,1), obstacles=[], path_map=[], tmp_best_distance=255, tmp_path=[]): 
     """
@@ -45,6 +45,7 @@ def fill(cur_distance=0, cur_pos=(0,0), tgt_pos=(1,1), obstacles=[], path_map=[]
     nxt_distance = cur_distance + 1
     # Debug print
     print("(x,y)=(",x,",", y,") cur_distance =", cur_distance, "best_distance =", tmp_best_distance)
+    print(path_map)
 
     # At the target already!
     if (cur_pos == tgt_pos):
@@ -55,14 +56,18 @@ def fill(cur_distance=0, cur_pos=(0,0), tgt_pos=(1,1), obstacles=[], path_map=[]
         return cur_distance,golden_path
 
     # Searching order to be determined by heuristic map - smallest searching first
-    search_order_dict = { heuristic_map[x-1,y]:(x-1,y), \
-                    heuristic_map[x+1,y]:(x+1,y), \
-                    heuristic_map[x,y-1]:(x,y-1), \
-                    heuristic_map[x,y+1]:(x,y+1) }
+    search_order_dict = { (x-1,y):heuristic_map[x-1,y], \
+                    (x+1,y):heuristic_map[x+1,y], \
+                    (x,y-1):heuristic_map[x,y-1], \
+                    (x,y+1):heuristic_map[x,y+1] }
+
+    #for coordinates,heuristic_distance in search_order_dict.items():
+    #    print(heuristic_distance, coordinates)
 
     if tmp_best_distance > nxt_distance:
-        for heuristic_distance,coordinates in sorted(search_order_dict.items()):
-                if coordinates[0]>=0 and coordinates[0]<M and coordinates[1]>=0 and coordinates[1]<N :
+        for coordinates,heuristic_distance in sorted(search_order_dict.items(), key=lambda x:x[1]):
+                if coordinates[0]>=0 and coordinates[0]<M and coordinates[1]>=0 and coordinates[1]<N \
+                        and (path_map[coordinates[0],coordinates[1]]>nxt_distance) and (coordinates not in obstacles):
                         tmp_path.append((x,y))
                         tmp_best_distance,golden_path = fill(nxt_distance,coordinates,tgt_pos,obstacles,path_map,tmp_best_distance,tmp_path)
                         tmp_path.pop()
@@ -106,18 +111,24 @@ def fill(cur_distance=0, cur_pos=(0,0), tgt_pos=(1,1), obstacles=[], path_map=[]
     return tmp_best_distance,golden_path
 
 
-start_pos = (0,2)
-tgt_pos = (4,1)
-#obstacles=[(1,2),(2,2),(2,3),(2,4),(3,4),(4,4),(5,4),(6,4),(7,4),(8,4),(8,5),(8,6),(8,7),(7,7),(6,7),(5,7),(5,6)]
-obstacles=[(1,2),(2,2),(2,3),(2,4),(3,4)]
+start_pos = (12,7)
+tgt_pos = (1,4)
+obstacles=[(1,2),(2,2),(2,3),(2,4),(3,4),(4,4),(5,4),(6,4),(7,4),(8,4),(8,5),(8,6),(8,7),(7,7),(6,7),(5,7),(5,6)]
+#obstacles=[(1,2),(2,2),(2,3),(2,4),(3,4)]
 path_map = np.zeros((M,N)) + 255
+
 tmp_path = []
 distance = 255
 
 # Theoretical shortest distance map to target point.
-for row in range(0,M):
-        for col in range(0,N):
+for row in range(0,M+1):
+        for col in range(0,N+1):
                 heuristic_map[row,col] = abs(row-tgt_pos[0]) + abs(col-tgt_pos[1])
+
+for pos in obstacles:
+    path_map[pos] = 888
+    heuristic_map[pos] = 888
+
 print(heuristic_map)
 
 distance,golden_path = fill(0, start_pos, tgt_pos, obstacles, path_map, 255, tmp_path)
@@ -129,8 +140,5 @@ print(golden_path)
 
 for pos in golden_path:
     path_map[pos] = 111
-for pos in obstacles:
-    path_map[pos] = 888
-
 
 print(path_map)
