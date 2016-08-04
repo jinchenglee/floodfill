@@ -152,10 +152,12 @@ class AStar(object):
         print(self.footprint)
         print("--------------")
 
-    def drawpath(self):
+    def drawpath(self,obstacles):
         """
         Print out the shortest path just found.
         """
+        for i in obstacles:
+            self.distance_map[i[0],i[1]]=44
         print("Distance map")
         print(self.distance_map)
         for i in self.footprint:
@@ -163,10 +165,10 @@ class AStar(object):
         print("Evaluated path")
         print(self.distance_map)
 
-astar = AStar(10,10)
-start_pos = (1,1)
-end_pos = (6,4)
-obstacles = [(1,3),(2,3),(3,3),(4,3),(5,3),(6,3),(7,3)]
+astar = AStar(13,12)
+start_pos = (12,7)
+end_pos = (1,4)
+obstacles=[(1,2),(2,2),(2,3),(2,4),(3,4),(4,4),(5,4),(6,4),(7,4),(8,4),(8,5),(8,6),(8,7),(7,7),(6,7),(5,7),(5,6)]
 astar.findpath(start_pos, end_pos, obstacles)
-astar.drawpath()
+astar.drawpath(obstacles)
 
